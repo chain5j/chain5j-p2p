@@ -1,7 +1,7 @@
-// Package p2ptls
+// Package p2pgmtls
 //
 // @author: xwc1125
-package p2ptls
+package p2pgmtls
 
 import (
 	ci "github.com/libp2p/go-libp2p-core/crypto"

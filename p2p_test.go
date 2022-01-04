@@ -50,11 +50,13 @@ func TestP2PServer1(t *testing.T) {
 		MaxPeers:         MaxPeers,
 		// StaticNodes:      []string{"/ip4/127.0.0.1/tcp/9546/p2p/QmafFDAXGtW1M2zhsiYPxUtpkYjAgBUpPDPQZRkhgonGrT"},
 		// StaticNodes: []string{"/ip4/127.0.0.1/tcp/9546/p2p/QmQSmLbF7Q6crFLx3GvzKEmiyeAbnknst1pFUQaqZcc64v"},
-		StaticNodes: []string{"/ip4/127.0.0.1/tcp/9546/p2p/QmPyhQdpcPGJaJWfMCoFh5kT7swiugbR5pFPyH6XRgrE8J"},
+		StaticNodes: []string{"/ip4/127.0.0.1/tcp/9546/p2p/QmRqKVoDy23eJtUWJeEHSXeqZFLjgC98AT2yoV4dzqnMZv"},
 		CaRoots: []string{
 			"/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl/ca/ca.pem",
 			"/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl2/ca/ca.pem",
-			"/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl2/server/server.pem",
+			"/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl2/ca/ca-sub.pem",
+			// "/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl2/ca/ca-all.pem",
+			// "/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl2/server/server-all.pem",
 		},
 		Metrics:      true,
 		MetricsLevel: 2,
@@ -104,9 +106,9 @@ func TestP2PServer2(t *testing.T) {
 	p2pConfig := models.P2PConfig{
 		Host:    "",
 		Port:    9546,
-		KeyPath: "/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl2/server/server-sub-key.pem",
+		KeyPath: "/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl2/server/server-key.pem",
 		// KeyPath:          "./testdata/node2/nodekey",
-		CertPath:         "/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl2/server/server-sub.pem",
+		CertPath:         "/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl2/server/server.pem",
 		IsTls:            true,
 		EnablePermission: false,
 		MaxPeers:         MaxPeers,
@@ -115,7 +117,8 @@ func TestP2PServer2(t *testing.T) {
 		CaRoots: []string{
 			"/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl/ca/ca.pem",
 			"/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl2/ca/ca.pem",
-			"/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl2/server/server.pem",
+			"/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl2/ca/ca-sub.pem",
+			// "/Users/yijiaren/Workspaces/git/chain5j/chain5j/conf/certs/ssl2/server/server-all.pem",
 		},
 		Metrics:      true,
 		MetricsLevel: 2,
@@ -132,7 +135,10 @@ func TestP2PServer2(t *testing.T) {
 
 	go testPeerEvent(service2, &wg, t)
 
-	service2.Start()
+	err = service2.Start()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// 接收消息
 	go testMsgRecv(t, service2, &wg)
