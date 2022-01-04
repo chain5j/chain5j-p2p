@@ -3,18 +3,20 @@ module github.com/chain5j/chain5j-p2p
 go 1.17
 
 require (
+	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/chain5j/chain5j-pkg v1.0.2
-    github.com/chain5j/chain5j-protocol v0.0.0-20220101110409-5fb9e85ebaa3
+	github.com/chain5j/chain5j-protocol v0.0.0-20220101110409-5fb9e85ebaa3
 	github.com/chain5j/logger v0.0.2
 	github.com/golang/mock v1.6.0
 	github.com/ipfs/go-log/v2 v2.3.0
 	github.com/libp2p/go-libp2p v0.15.0
 	github.com/libp2p/go-libp2p-connmgr v0.2.4
 	github.com/libp2p/go-libp2p-core v0.9.0
+	github.com/libp2p/go-libp2p-noise v0.2.2
 	github.com/libp2p/go-libp2p-tls v0.2.0
 	github.com/multiformats/go-multiaddr v0.4.0
-	github.com/stretchr/testify v1.7.0
 	github.com/tjfoc/gmsm v1.4.0
+	golang.org/x/sys v0.0.0-20210816183151-1e6c022a8912
 )
 
 require (
@@ -22,9 +24,7 @@ require (
 	github.com/aristanetworks/goarista v0.0.0-20200812190859-4cb0e71f3c0e // indirect
 	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/btcsuite/btcd v0.22.0-beta // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c // indirect
 	github.com/flynn/noise v1.0.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -56,7 +56,6 @@ require (
 	github.com/libp2p/go-libp2p-discovery v0.5.1 // indirect
 	github.com/libp2p/go-libp2p-mplex v0.4.1 // indirect
 	github.com/libp2p/go-libp2p-nat v0.0.6 // indirect
-	github.com/libp2p/go-libp2p-noise v0.2.2 // indirect
 	github.com/libp2p/go-libp2p-peerstore v0.2.8 // indirect
 	github.com/libp2p/go-libp2p-pnet v0.2.0 // indirect
 	github.com/libp2p/go-libp2p-swarm v0.5.3 // indirect
@@ -97,7 +96,6 @@ require (
 	github.com/multiformats/go-varint v0.0.6 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.30.0 // indirect
@@ -112,9 +110,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210813211128-0a44fdfbc16e // indirect
 	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20210816183151-1e6c022a8912 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
 //replace (

@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/chain5j/chain5j-p2p/p2pgmtls"
 	"github.com/chain5j/chain5j-p2p/p2ptls"
 	"github.com/chain5j/chain5j-pkg/event"
 	"github.com/chain5j/chain5j-protocol/models"
@@ -29,6 +30,7 @@ import (
 	noise "github.com/libp2p/go-libp2p-noise"
 	p2pTls "github.com/libp2p/go-libp2p-tls"
 	"github.com/multiformats/go-multiaddr"
+	"github.com/tjfoc/gmsm/gmtls"
 )
 
 // p2pNode 节点信息
@@ -39,10 +41,10 @@ type p2pNode struct {
 
 	config protocol.Config
 
-	host      host.Host        // 当前节点host
-	peerId    peer.ID          // 当前节点的PeerID
-	p2pPrvKey ci.PrivKey       // p2p的私钥
-	cert      *tls.Certificate // 证书（如果是tls）
+	host      host.Host    // 当前节点host
+	peerId    peer.ID      // 当前节点的PeerID
+	p2pPrvKey ci.PrivKey   // p2p的私钥
+	cert      *Certificate // 证书（如果是tls）
 
 	notify        *p2pNotify
 	streamManager *p2pStreamManager
@@ -313,7 +315,7 @@ func (n *p2pNode) sendMsg(peerId peer.ID, msg *models.P2PMessage) error {
 }
 
 // makeHost 创建host
-func makeHost(log logger.Logger, config protocol.Config, prvKey ci.PrivKey, cert *tls.Certificate) (host.Host, error) {
+func makeHost(log logger.Logger, config protocol.Config, prvKey ci.PrivKey, cert *Certificate) (host.Host, error) {
 	addr := getP2PAddr(config)
 	muAddr, err := multiaddr.NewMultiaddr(addr)
 	if err != nil {
@@ -344,40 +346,45 @@ func makeHost(log logger.Logger, config protocol.Config, prvKey ci.PrivKey, cert
 	} else {
 		// TODO 【xwc1125】使用证书获取私钥
 		// 根据私钥判断
-		switch prvKey.Type() {
-		case 20:
-			// 国密
-			log.Info("the type of the prvKey found is sm2. use gm tls security.")
-			// ln.libP2pHost.gmTlsChainTrustRoots = libp2pgmtls.BuildTlsTrustRoots(ln.prepare.chainTrustRootCertsBytes)
-			// ln.libP2pHost.initTlsCsAndSubassemblies()
-			// tpt := libp2pgmtls.New(
-			// // ln.prepare.keyBytes,
-			// // ln.prepare.certBytes,
-			// // ln.libP2pHost.gmTlsChainTrustRoots,
-			// // ln.libP2pHost.newTlsPeerChainIdsNotifyC,
-			// // ln.libP2pHost.newTlsCertIdPeerIdNotifyC,
-			// // ln.libP2pHost.addPeerIdTlsCertNotifyC,
-			// )
-			// opts = append(opts, libp2p.Security(libp2pgmtls.ID, tpt))
-			// ln.libP2pHost.isTls = true
-			// ln.libP2pHost.isGmTls = true
-		default:
-			caRoots := make([][]byte, 0)
-			if config.P2PConfig().CaRoots != nil {
-				for _, root := range config.P2PConfig().CaRoots {
-					rootBytes, err := ioutil.ReadFile(root)
-					if err != nil {
-						return nil, err
+		if cert != nil {
+			switch cert.TlsType {
+			case 20:
+				// 国密
+				log.Info("the type of the prvKey found is sm2. use gm tls security.")
+				caRoots := make([][]byte, 0)
+				if config.P2PConfig().CaRoots != nil {
+					for _, root := range config.P2PConfig().CaRoots {
+						rootBytes, err := ioutil.ReadFile(root)
+						if err != nil {
+							return nil, err
+						}
+						caRoots = append(caRoots, rootBytes)
 					}
-					caRoots = append(caRoots, rootBytes)
 				}
+				transport, err := p2pgmtls.New(cert.Certificate.(*gmtls.Certificate), caRoots)
+				if err != nil {
+					return nil, err
+				}
+				opts = append(opts, libp2p.Identity(prvKey))
+				opts = append(opts, libp2p.Security(p2pgmtls.ProtocolID, transport))
+			default:
+				caRoots := make([][]byte, 0)
+				if config.P2PConfig().CaRoots != nil {
+					for _, root := range config.P2PConfig().CaRoots {
+						rootBytes, err := ioutil.ReadFile(root)
+						if err != nil {
+							return nil, err
+						}
+						caRoots = append(caRoots, rootBytes)
+					}
+				}
+				transport, err := p2ptls.New(cert.Certificate.(*tls.Certificate), caRoots)
+				if err != nil {
+					return nil, err
+				}
+				opts = append(opts, libp2p.Identity(prvKey))
+				opts = append(opts, libp2p.Security(p2ptls.ProtocolID, transport))
 			}
-			transport, err := p2ptls.New(cert, caRoots)
-			if err != nil {
-				return nil, err
-			}
-			opts = append(opts, libp2p.Identity(prvKey))
-			opts = append(opts, libp2p.Security(p2ptls.ProtocolID, transport))
 		}
 	}
 

@@ -12,12 +12,18 @@ import (
 	"github.com/chain5j/chain5j-protocol/protocol"
 	"github.com/chain5j/logger"
 	ci "github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/tjfoc/gmsm/gmtls"
 )
+
+type Certificate struct {
+	TlsType     int
+	Certificate interface{}
+}
 
 // getPrvKey 获取p2p的私钥
 // 私钥可能为libp2p的直接私钥，此情况下，必然使用的非tls
 // 如果使用的是tls，那么私钥pem和cert的pem
-func getPrvKey(log logger.Logger, config protocol.Config) (ci.PrivKey, *tls.Certificate, error) {
+func getPrvKey(log logger.Logger, config protocol.Config) (ci.PrivKey, *Certificate, error) {
 	var (
 		prvKey ci.PrivKey
 		err    error
@@ -31,15 +37,35 @@ func getPrvKey(log logger.Logger, config protocol.Config) (ci.PrivKey, *tls.Cert
 		if err != nil {
 			return nil, nil, err
 		}
-		cert, err := tls.X509KeyPair(certBytes, keyBytes)
-		if err != nil {
-			return nil, nil, err
+
+		gmcert, err := gmtls.X509KeyPair(certBytes, keyBytes)
+		if err == nil {
+			// gm
+			if err != nil {
+				return nil, nil, err
+			}
+			prvKey, _, err = ci.KeyPairFromStdKey(gmcert.PrivateKey)
+			if err != nil {
+				return nil, nil, err
+			}
+			return prvKey, &Certificate{
+				TlsType:     20,
+				Certificate: &gmcert,
+			}, nil
+		} else {
+			cert, err := tls.X509KeyPair(certBytes, keyBytes)
+			if err != nil {
+				return nil, nil, err
+			}
+			prvKey, _, err = ci.KeyPairFromStdKey(cert.PrivateKey)
+			if err != nil {
+				return nil, nil, err
+			}
+			return prvKey, &Certificate{
+				TlsType:     1,
+				Certificate: &cert,
+			}, nil
 		}
-		prvKey, _, err = ci.KeyPairFromStdKey(cert.PrivateKey)
-		if err != nil {
-			return nil, nil, err
-		}
-		return prvKey, &cert, nil
 	}
 
 	// 使用libp2p的原生私钥
